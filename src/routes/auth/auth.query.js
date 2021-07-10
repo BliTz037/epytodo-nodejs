@@ -3,7 +3,6 @@ const jwt = require('jsonwebtoken');
 const db = require('../../config/db').connection;
 
 exports.signup = (req, res, next) => {
-    console.log(req.body);
     if (!req.body.hasOwnProperty('email') ||
         !req.body.hasOwnProperty('password') ||
         !req.body.hasOwnProperty('name') ||
@@ -22,4 +21,28 @@ exports.signup = (req, res, next) => {
         })
     })
     .catch(error => res.status(500).json({ error }));
+}
+
+exports.login = (req, res, next) => {
+    if (!req.body.hasOwnProperty('email') ||
+        !req.body.hasOwnProperty('password'))
+        return res.status(401).json({ msg: "Missing parameter" });
+    const sql = `SELECT id, email, password FROM user WHERE email = '${req.body.email}'`;
+    db.query(sql, function(err, results) {
+        if (err) {
+            res.status(500).json({ msg: "Internal error"})
+            throw err;
+        }
+        if (results.length === 0)
+            return res.status(404).json({ msg: "Invalid Credentials" });
+        const resp = results[0];
+        bcrypt.compare(req.body.password, resp.password)
+        .then(valid => {
+            if (!valid)
+                return res.status(401).json({ msg: "Invalid Credentials"})
+            res.status(200).json({token: jwt.sign({userId: resp.id}, process.env.SECRET,
+            { expiresIn: '24h'})});
+        })
+        .catch(error => res.status(500).json({error}));
+    })
 }
