@@ -7,7 +7,7 @@ exports.signup = (req, res, next) => {
         !req.body.hasOwnProperty('password') ||
         !req.body.hasOwnProperty('name') ||
         !req.body.hasOwnProperty('firstname'))
-        return res.status(500).json({ msg: "Missing parameter" });
+        return res.status(400).json({ msg: "Missing parameter" });
     bcrypt.hash(req.body.password, 10)
     .then(hash => {
         const sql = `INSERT INTO user (email, password, name, firstname) VALUES ('${req.body.email}', '${hash}', '${req.body.name}', '${req.body.firstname}')`
@@ -26,11 +26,11 @@ exports.signup = (req, res, next) => {
 exports.login = (req, res, next) => {
     if (!req.body.hasOwnProperty('email') ||
         !req.body.hasOwnProperty('password'))
-        return res.status(401).json({ msg: "Missing parameter" });
+        return res.status(400).json({ msg: "Missing parameter" });
     const sql = `SELECT id, email, password FROM user WHERE email = '${req.body.email}'`;
     db.query(sql, function(err, results) {
         if (err) {
-            res.status(500).json({ msg: "Internal error"})
+            res.status(500).json({ msg: "internal server error"})
             throw err;
         }
         if (results.length === 0)
