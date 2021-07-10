@@ -13,8 +13,12 @@ exports.signup = (req, res, next) => {
         const sql = `INSERT INTO user (email, password, name, firstname) VALUES ('${req.body.email}', '${hash}', '${req.body.name}', '${req.body.firstname}')`
         db.query(sql, function(err, results) {
             if (err) {
-                res.status(500).json({ msg: "Internal error" })
-                throw err;
+                if (err.code === 'ER_DUP_ENTRY')
+                    return res.status(409).json({ msg: "account already exists" });
+                else {
+                    console.error(err);
+                    return res.status(500).json({ msg: "internal server error" });
+                }
             }
             res.status(201).json({token: jwt.sign({ userId: results.insertId}, process.env.SECRET,
             { expiresIn: '24h'})});
