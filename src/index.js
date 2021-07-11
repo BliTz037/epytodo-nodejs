@@ -1,7 +1,7 @@
 const express = require('express');
 const app = express();
 const port = process.env.PORT || 3001;
-// const userRoutes = require("./routes/user/user");
+const userRoutes = require("./routes/user/user");
 // const todoRoutes = require("./routes/todo/todo");
 const authRoutes = require("./routes/auth/auth");
 
@@ -15,7 +15,7 @@ app.use((req, res, next) => {
 
 app.use(express.json());
 app.use('/', authRoutes);
-// app.use('/user', userRoutes);
+app.use('/user', userRoutes);
 // app.use('/todo', todoRoutes);
 
 console.log('Epytodo API server started on: ' + port);
