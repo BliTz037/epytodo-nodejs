@@ -12,7 +12,14 @@ exports.getAllUsersInfo = (req, res, next) => {
 }
 
 exports.getUserTodos = (req, res, next) => {
-    res.status(200).json({msg: "OK"});
+    const sql = `SELECT * FROM todo`;
+    db.query(sql, function(err, results) {
+        if (err) {
+            console.error(err);
+            return res.status(500).json({ msg: "internal server error" });
+        }
+        res.status(200).json(results);
+    })
 }
 
 exports.getUserInfo = (req, res, next) => {
