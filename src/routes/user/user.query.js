@@ -73,5 +73,16 @@ exports.updateUser = (req, res, next) => {
 }
 
 exports.deleteUser = (req, res, next) => {
-    res.status(200).json({msg: "OK"});
+    if (!req.params.hasOwnProperty('id'))
+        return res.status(400).json({msg: "Missing parameter"});
+    const sql = `DELETE FROM user WHERE id = '${req.params.id}'`;
+    db.query(sql, function(err, result) {
+        if (err) {
+            console.error(err);
+            return res.status(500).json({ msg: "internal server error" });
+        }
+        if (result.affectedRows === 0)
+            return res.status(404).json({ msg: "User not found"});
+        res.status(200).json({msg : `succesfully deleted record number: ${req.params.id}`});
+    });
 }
