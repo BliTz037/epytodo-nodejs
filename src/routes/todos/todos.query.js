@@ -22,6 +22,8 @@ exports.createTodo = (req, res, next) => {
         if (err) {
             if (err.code == 'ER_TRUNCATED_WRONG_VALUE')
                 return res.status(400).json({msg: "Bad parameter"});
+            if (err.code == 'ER_DUP_ENTRY')
+                return res.status(400).json({msg: "Todo already exist"});
             console.error(err);
             return res.status(500).json({ msg: "internal server error" });
         }
