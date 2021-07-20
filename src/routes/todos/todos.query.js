@@ -27,8 +27,12 @@ exports.createTodo = (req, res, next) => {
             console.error(err);
             return res.status(500).json({ msg: "internal server error" });
         }
+        db.query(`SELECT title, description, due_time, user_id, status FROM todo WHERE id = '${result.insertId}'`, function(err, result) {
+            if (err)
+                return res.status(500).json({ msg: "internal server error" });
         res.status(201).json(result);
-    })
+        });
+    });
 }
 
 exports.updateTodo = (req, res, next) => {
