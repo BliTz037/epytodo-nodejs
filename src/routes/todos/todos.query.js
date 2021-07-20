@@ -8,10 +8,12 @@ exports.createTodo = (req, res, next) => {
         !req.body.hasOwnProperty('user_id') ||
         !req.body.hasOwnProperty('status'))
         return res.status(400).json({msg: "Missing parameter"});
+
     if (Date.parse(req.body.due_time) == NaN)
         return res.status(400).json({msg: "Bad datetime"});
     if (!["todo", "in progress", "done"].includes(req.body.status))
         return res.status(400).json({msg: "Bad status"});
+
     const sql = `INSERT INTO todo (title, description, due_time, user_id, status)
     VALUES ('${req.body.title}',
             '${req.body.description}',
@@ -36,7 +38,43 @@ exports.createTodo = (req, res, next) => {
 }
 
 exports.updateTodo = (req, res, next) => {
+    if (!req.params.hasOwnProperty('id'))
+        return res.status(400).json({msg: "Missing parameter"});
+    if (!req.body.hasOwnProperty('title') ||
+        !req.body.hasOwnProperty('description') ||
+        !req.body.hasOwnProperty('due_time') ||
+        !req.body.hasOwnProperty('user_id') ||
+        !req.body.hasOwnProperty('status'))
+        return res.status(400).json({msg: "Missing parameter"});
 
+    if (Date.parse(req.body.due_time) == NaN)
+        return res.status(400).json({msg: "Bad datetime"});
+    if (!["todo", "in progress", "done"].includes(req.body.status))
+        return res.status(400).json({msg: "Bad status"});
+
+    const sql = `UPDATE todo SET 
+        title = '${req.body.title}',
+        description = '${req.body.description}',
+        due_time = '${req.body.due_time}',
+        user_id = '${req.body.user_id}',
+        status = '${req.body.status}' WHERE id = ${req.params.id}`;
+    db.query(sql, function(err, result) {
+        if (err) {
+            if (err.code == 'ER_TRUNCATED_WRONG_VALUE')
+                return res.status(400).json({msg: "Bad parameter"});
+            if (err.code == 'ER_DUP_ENTRY')
+                return res.status(400).json({msg: "Todo already exist"});
+            console.error(err);
+            return res.status(500).json({ msg: "internal server error" });
+        }
+        if (result.affectedRows === 0)
+            return res.status(404).json({ msg: "User not found"});
+        db.query(`SELECT title, description, due_time, user_id, status FROM todo WHERE id = '${req.params.id}'`, function(err, result) {
+            if (err)
+                return res.status(500).json({ msg: "internal server error" });
+            res.status(201).json(result);
+        });
+    });
 }
 
 exports.getAllTodo = (req, res, next) => {
@@ -52,7 +90,7 @@ exports.getAllTodo = (req, res, next) => {
 }
 
 exports.getTodo = (req, res, next) => {
-    let sql = `SELECT * FROM todo WHERE id = '${req.params.id}'`;
+    const sql = `SELECT * FROM todo WHERE id = '${req.params.id}'`;
 
     if (!req.params.hasOwnProperty('id'))
         return res.status(400).json({msg: "Missing parameter"});
