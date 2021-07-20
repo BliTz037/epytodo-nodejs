@@ -17,6 +17,9 @@ app.use(express.json());
 app.use('/', authRoutes);
 app.use('/user', userRoutes);
 app.use('/todo', todoRoutes);
+app.use(function(req, res, next) {
+    res.status(404).json({msg: "Route not found !"});
+});
 
 console.log('Epytodo API server started on: ' + port);
 app.listen(port);
