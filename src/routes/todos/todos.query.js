@@ -20,6 +20,8 @@ exports.createTodo = (req, res, next) => {
             '${req.body.status}')`;
     db.query(sql, function(err, result) {
         if (err) {
+            if (err.code == 'ER_TRUNCATED_WRONG_VALUE')
+                return res.status(400).json({msg: "Bad parameter"});
             console.error(err);
             return res.status(500).json({ msg: "internal server error" });
         }
